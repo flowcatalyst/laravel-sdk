@@ -12,49 +12,38 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('outbox_messages', function (Blueprint $table) {
-            // Primary key - TSID as Crockford Base32 string
-            $table->string('id', 255)->primary();
-
-            // Tenant and partition for routing
-            $table->bigInteger('tenant_id');
-            $table->string('partition_id', 100);
-
-            // Message type: EVENT or DISPATCH_JOB
+            // Columns required by the Java outbox-processor
+            $table->string('id', 26)->primary();
             $table->string('type', 20);
-
-            // Payload
+            $table->string('message_group', 255)->nullable();
             $table->longText('payload');
-            $table->bigInteger('payload_size');
-
-            // Processing status
-            $table->string('status', 20)->default('PENDING');
+            $table->smallInteger('status')->default(0);
+            $table->smallInteger('retry_count')->default(0);
             $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('processed_at')->nullable();
+            $table->timestamp('updated_at')->useCurrent();
+            $table->text('error_message')->nullable();
 
-            // Retry handling
-            $table->integer('retry_count')->default(0);
-            $table->text('error_reason')->nullable();
-
-            // Optional headers (JSON)
+            // SDK-specific columns (ignored by the processor)
+            $table->string('client_id', 26)->nullable();
+            $table->integer('payload_size')->nullable();
             $table->json('headers')->nullable();
 
-            // Indexes for efficient polling
-            // Primary polling query: get pending messages for a partition
+            // Processor indexes: pending items (status=0)
             $table->index(
-                ['tenant_id', 'partition_id', 'status', 'created_at'],
-                'idx_outbox_pending'
+                ['status', 'message_group', 'created_at'],
+                'idx_outbox_messages_pending'
             );
 
-            // Status-based queries
+            // Processor indexes: stuck items (status=9)
             $table->index(
                 ['status', 'created_at'],
-                'idx_outbox_status'
+                'idx_outbox_messages_stuck'
             );
 
-            // Discovery query for active partitions
+            // SDK-specific: client polling
             $table->index(
-                ['created_at'],
-                'idx_outbox_created'
+                ['client_id', 'status', 'created_at'],
+                'idx_outbox_client_pending'
             );
         });
     }

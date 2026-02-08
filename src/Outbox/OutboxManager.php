@@ -7,6 +7,8 @@ namespace FlowCatalyst\Outbox;
 use FlowCatalyst\Enums\MessageType;
 use FlowCatalyst\Exceptions\OutboxException;
 use FlowCatalyst\Outbox\Contracts\OutboxDriver;
+use FlowCatalyst\Outbox\Drivers\DatabaseDriver;
+use FlowCatalyst\Outbox\DTOs\CreateAuditLogDto;
 use FlowCatalyst\Outbox\DTOs\CreateDispatchJobDto;
 use FlowCatalyst\Outbox\DTOs\CreateEventDto;
 use FlowCatalyst\Support\TsidGenerator;
@@ -15,9 +17,19 @@ class OutboxManager
 {
     public function __construct(
         private readonly OutboxDriver $driver,
-        private readonly int $tenantId,
-        private readonly string $defaultPartition = 'default'
+        private readonly string $clientId,
     ) {}
+
+    /**
+     * Create a DatabaseDriver for a specific connection.
+     *
+     * Useful for writing outbox messages to a different database connection
+     * than the default one configured in the service provider.
+     */
+    public static function driverForConnection(?string $connection, string $table = 'outbox_messages'): DatabaseDriver
+    {
+        return new DatabaseDriver($connection, $table);
+    }
 
     /**
      * Create an event in the outbox.
@@ -25,26 +37,25 @@ class OutboxManager
      * @return string The generated message ID (TSID)
      * @throws OutboxException
      */
-    public function createEvent(CreateEventDto $event): string
+    public function createEvent(CreateEventDto $event, ?OutboxDriver $driver = null): string
     {
-        $this->ensureTenantId();
+        $this->ensureClientId();
+        $activeDriver = $driver ?? $this->driver;
 
         $id = TsidGenerator::generate();
         $payload = json_encode($event->toPayload());
+        $now = date('Y-m-d H:i:s');
 
-        $message = [
-            'id' => $id,
-            'tenant_id' => $this->tenantId,
-            'partition_id' => $event->partitionId ?: $this->defaultPartition,
-            'type' => MessageType::EVENT->value,
-            'payload' => $payload,
-            'payload_size' => strlen($payload),
-            'status' => 'PENDING',
-            'created_at' => date('Y-m-d H:i:s'),
-            'headers' => !empty($event->headers) ? $event->headers : null,
-        ];
+        $message = $this->buildMessage(
+            $id,
+            MessageType::EVENT,
+            $event->messageGroup,
+            $payload,
+            !empty($event->headers) ? $event->headers : null,
+            $now,
+        );
 
-        $this->driver->insert($message);
+        $activeDriver->insert($message);
 
         return $id;
     }
@@ -55,26 +66,25 @@ class OutboxManager
      * @return string The generated message ID (TSID)
      * @throws OutboxException
      */
-    public function createDispatchJob(CreateDispatchJobDto $job): string
+    public function createDispatchJob(CreateDispatchJobDto $job, ?OutboxDriver $driver = null): string
     {
-        $this->ensureTenantId();
+        $this->ensureClientId();
+        $activeDriver = $driver ?? $this->driver;
 
         $id = TsidGenerator::generate();
         $payload = json_encode($job->toPayload());
+        $now = date('Y-m-d H:i:s');
 
-        $message = [
-            'id' => $id,
-            'tenant_id' => $this->tenantId,
-            'partition_id' => $job->partitionId ?: $this->defaultPartition,
-            'type' => MessageType::DISPATCH_JOB->value,
-            'payload' => $payload,
-            'payload_size' => strlen($payload),
-            'status' => 'PENDING',
-            'created_at' => date('Y-m-d H:i:s'),
-            'headers' => null,
-        ];
+        $message = $this->buildMessage(
+            $id,
+            MessageType::DISPATCH_JOB,
+            $job->messageGroup,
+            $payload,
+            null,
+            $now,
+        );
 
-        $this->driver->insert($message);
+        $activeDriver->insert($message);
 
         return $id;
     }
@@ -86,16 +96,18 @@ class OutboxManager
      * @return string[] The generated message IDs (TSIDs)
      * @throws OutboxException
      */
-    public function createEvents(array $events): array
+    public function createEvents(array $events, ?OutboxDriver $driver = null): array
     {
         if (empty($events)) {
             return [];
         }
 
-        $this->ensureTenantId();
+        $this->ensureClientId();
+        $activeDriver = $driver ?? $this->driver;
 
         $messages = [];
         $ids = [];
+        $now = date('Y-m-d H:i:s');
 
         foreach ($events as $event) {
             $id = TsidGenerator::generate();
@@ -103,20 +115,17 @@ class OutboxManager
 
             $payload = json_encode($event->toPayload());
 
-            $messages[] = [
-                'id' => $id,
-                'tenant_id' => $this->tenantId,
-                'partition_id' => $event->partitionId ?: $this->defaultPartition,
-                'type' => MessageType::EVENT->value,
-                'payload' => $payload,
-                'payload_size' => strlen($payload),
-                'status' => 'PENDING',
-                'created_at' => date('Y-m-d H:i:s'),
-                'headers' => !empty($event->headers) ? $event->headers : null,
-            ];
+            $messages[] = $this->buildMessage(
+                $id,
+                MessageType::EVENT,
+                $event->messageGroup,
+                $payload,
+                !empty($event->headers) ? $event->headers : null,
+                $now,
+            );
         }
 
-        $this->driver->insertBatch($messages);
+        $activeDriver->insertBatch($messages);
 
         return $ids;
     }
@@ -128,16 +137,18 @@ class OutboxManager
      * @return string[] The generated message IDs (TSIDs)
      * @throws OutboxException
      */
-    public function createDispatchJobs(array $jobs): array
+    public function createDispatchJobs(array $jobs, ?OutboxDriver $driver = null): array
     {
         if (empty($jobs)) {
             return [];
         }
 
-        $this->ensureTenantId();
+        $this->ensureClientId();
+        $activeDriver = $driver ?? $this->driver;
 
         $messages = [];
         $ids = [];
+        $now = date('Y-m-d H:i:s');
 
         foreach ($jobs as $job) {
             $id = TsidGenerator::generate();
@@ -145,20 +156,87 @@ class OutboxManager
 
             $payload = json_encode($job->toPayload());
 
-            $messages[] = [
-                'id' => $id,
-                'tenant_id' => $this->tenantId,
-                'partition_id' => $job->partitionId ?: $this->defaultPartition,
-                'type' => MessageType::DISPATCH_JOB->value,
-                'payload' => $payload,
-                'payload_size' => strlen($payload),
-                'status' => 'PENDING',
-                'created_at' => date('Y-m-d H:i:s'),
-                'headers' => null,
-            ];
+            $messages[] = $this->buildMessage(
+                $id,
+                MessageType::DISPATCH_JOB,
+                $job->messageGroup,
+                $payload,
+                null,
+                $now,
+            );
         }
 
-        $this->driver->insertBatch($messages);
+        $activeDriver->insertBatch($messages);
+
+        return $ids;
+    }
+
+    /**
+     * Create an audit log in the outbox.
+     *
+     * @return string The generated message ID (TSID)
+     * @throws OutboxException
+     */
+    public function createAuditLog(CreateAuditLogDto $auditLog, ?OutboxDriver $driver = null): string
+    {
+        $this->ensureClientId();
+        $activeDriver = $driver ?? $this->driver;
+
+        $id = TsidGenerator::generate();
+        $payload = json_encode($auditLog->toPayload());
+        $now = date('Y-m-d H:i:s');
+
+        $message = $this->buildMessage(
+            $id,
+            MessageType::AUDIT_LOG,
+            null,
+            $payload,
+            !empty($auditLog->headers) ? $auditLog->headers : null,
+            $now,
+        );
+
+        $activeDriver->insert($message);
+
+        return $id;
+    }
+
+    /**
+     * Create multiple audit logs in the outbox (batch).
+     *
+     * @param CreateAuditLogDto[] $auditLogs
+     * @return string[] The generated message IDs (TSIDs)
+     * @throws OutboxException
+     */
+    public function createAuditLogs(array $auditLogs, ?OutboxDriver $driver = null): array
+    {
+        if (empty($auditLogs)) {
+            return [];
+        }
+
+        $this->ensureClientId();
+        $activeDriver = $driver ?? $this->driver;
+
+        $messages = [];
+        $ids = [];
+        $now = date('Y-m-d H:i:s');
+
+        foreach ($auditLogs as $auditLog) {
+            $id = TsidGenerator::generate();
+            $ids[] = $id;
+
+            $payload = json_encode($auditLog->toPayload());
+
+            $messages[] = $this->buildMessage(
+                $id,
+                MessageType::AUDIT_LOG,
+                null,
+                $payload,
+                !empty($auditLog->headers) ? $auditLog->headers : null,
+                $now,
+            );
+        }
+
+        $activeDriver->insertBatch($messages);
 
         return $ids;
     }
@@ -172,14 +250,42 @@ class OutboxManager
     }
 
     /**
-     * Ensure tenant ID is configured.
+     * Build an outbox message array matching the outbox-processor schema.
+     *
+     * Status is integer 0 (PENDING), not a string.
+     * The processor manages all other status transitions.
+     */
+    private function buildMessage(
+        string $id,
+        MessageType $type,
+        ?string $messageGroup,
+        string $payload,
+        ?array $headers,
+        string $now,
+    ): array {
+        return [
+            'id' => $id,
+            'type' => $type->value,
+            'message_group' => $messageGroup,
+            'payload' => $payload,
+            'status' => 0,
+            'created_at' => $now,
+            'updated_at' => $now,
+            'client_id' => $this->clientId,
+            'payload_size' => strlen($payload),
+            'headers' => $headers,
+        ];
+    }
+
+    /**
+     * Ensure client ID is configured.
      *
      * @throws OutboxException
      */
-    private function ensureTenantId(): void
+    private function ensureClientId(): void
     {
-        if ($this->tenantId <= 0) {
-            throw OutboxException::missingTenantId();
+        if (empty($this->clientId)) {
+            throw OutboxException::missingClientId();
         }
     }
 }

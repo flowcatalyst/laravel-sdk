@@ -15,4 +15,9 @@ enum MessageType: string
      * Direct webhook dispatch job without subscription matching.
      */
     case DISPATCH_JOB = 'DISPATCH_JOB';
+
+    /**
+     * Audit log entry for compliance and debugging.
+     */
+    case AUDIT_LOG = 'AUDIT_LOG';
 }

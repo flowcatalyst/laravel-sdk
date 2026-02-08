@@ -11,13 +11,14 @@ interface OutboxDriver
      *
      * @param array{
      *     id: string,
-     *     tenant_id: int,
-     *     partition_id: string,
      *     type: string,
+     *     message_group: string|null,
      *     payload: string,
-     *     payload_size: int,
-     *     status: string,
+     *     status: int,
      *     created_at: string,
+     *     updated_at: string,
+     *     client_id: string,
+     *     payload_size: int,
      *     headers: array|null
      * } $message
      */
@@ -28,13 +29,14 @@ interface OutboxDriver
      *
      * @param array<array{
      *     id: string,
-     *     tenant_id: int,
-     *     partition_id: string,
      *     type: string,
+     *     message_group: string|null,
      *     payload: string,
-     *     payload_size: int,
-     *     status: string,
+     *     status: int,
      *     created_at: string,
+     *     updated_at: string,
+     *     client_id: string,
+     *     payload_size: int,
      *     headers: array|null
      * }> $messages
      */

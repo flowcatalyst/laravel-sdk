@@ -17,7 +17,6 @@ class CreateEventDto
     public function __construct(
         public readonly string $type,
         public readonly array $data,
-        public readonly string $partitionId,
         public readonly ?string $source = null,
         public readonly ?string $subject = null,
         public readonly ?string $correlationId = null,
@@ -31,12 +30,11 @@ class CreateEventDto
     /**
      * Create a new event DTO.
      */
-    public static function create(string $type, array $data, string $partitionId): self
+    public static function create(string $type, array $data): self
     {
         return new self(
             type: $type,
             data: $data,
-            partitionId: $partitionId,
         );
     }
 
@@ -48,7 +46,6 @@ class CreateEventDto
         return new self(
             type: $this->type,
             data: $this->data,
-            partitionId: $this->partitionId,
             source: $this->source,
             subject: $this->subject,
             correlationId: $correlationId,
@@ -68,7 +65,6 @@ class CreateEventDto
         return new self(
             type: $this->type,
             data: $this->data,
-            partitionId: $this->partitionId,
             source: $this->source,
             subject: $this->subject,
             correlationId: $this->correlationId,
@@ -88,7 +84,6 @@ class CreateEventDto
         return new self(
             type: $this->type,
             data: $this->data,
-            partitionId: $this->partitionId,
             source: $this->source,
             subject: $this->subject,
             correlationId: $this->correlationId,
@@ -108,7 +103,6 @@ class CreateEventDto
         return new self(
             type: $this->type,
             data: $this->data,
-            partitionId: $this->partitionId,
             source: $source,
             subject: $this->subject,
             correlationId: $this->correlationId,
@@ -128,7 +122,6 @@ class CreateEventDto
         return new self(
             type: $this->type,
             data: $this->data,
-            partitionId: $this->partitionId,
             source: $this->source,
             subject: $subject,
             correlationId: $this->correlationId,
@@ -148,7 +141,6 @@ class CreateEventDto
         return new self(
             type: $this->type,
             data: $this->data,
-            partitionId: $this->partitionId,
             source: $this->source,
             subject: $this->subject,
             correlationId: $this->correlationId,
@@ -168,7 +160,6 @@ class CreateEventDto
         return new self(
             type: $this->type,
             data: $this->data,
-            partitionId: $this->partitionId,
             source: $this->source,
             subject: $this->subject,
             correlationId: $this->correlationId,
@@ -188,7 +179,6 @@ class CreateEventDto
         return new self(
             type: $this->type,
             data: $this->data,
-            partitionId: $this->partitionId,
             source: $this->source,
             subject: $this->subject,
             correlationId: $this->correlationId,

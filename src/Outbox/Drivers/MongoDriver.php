@@ -58,22 +58,27 @@ class MongoDriver implements OutboxDriver
 
     /**
      * Prepare a message for MongoDB insertion.
+     * Field names use camelCase to match the Java outbox-processor's MongoOutboxRepository.
      */
     private function prepareMessage(array $message): array
     {
+        $now = new \MongoDB\BSON\UTCDateTime(strtotime($message['created_at']) * 1000);
+
         return [
+            // Processor-required fields (camelCase for MongoDB)
             '_id' => $message['id'],
-            'tenant_id' => $message['tenant_id'],
-            'partition_id' => $message['partition_id'],
             'type' => $message['type'],
+            'messageGroup' => $message['message_group'] ?? null,
             'payload' => $message['payload'],
-            'payload_size' => $message['payload_size'],
             'status' => $message['status'],
-            'created_at' => new \MongoDB\BSON\UTCDateTime(strtotime($message['created_at']) * 1000),
+            'retryCount' => 0,
+            'createdAt' => $now,
+            'updatedAt' => $now,
+            'errorMessage' => null,
+            // SDK-specific fields
+            'clientId' => $message['client_id'],
+            'payloadSize' => $message['payload_size'],
             'headers' => $message['headers'] ?? null,
-            'processed_at' => null,
-            'retry_count' => 0,
-            'error_reason' => null,
         ];
     }
 

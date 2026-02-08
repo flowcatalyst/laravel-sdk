@@ -7,11 +7,11 @@ namespace FlowCatalyst\Exceptions;
 class OutboxException extends FlowCatalystException
 {
     /**
-     * Create an exception for missing tenant ID.
+     * Create an exception for missing client ID.
      */
-    public static function missingTenantId(): static
+    public static function missingClientId(): static
     {
-        return new static('Tenant ID is required. Please set FLOWCATALYST_TENANT_ID in your environment.');
+        return new static('Client ID is required. Please set FLOWCATALYST_CLIENT_ID in your environment.');
     }
 
     /**

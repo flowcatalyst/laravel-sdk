@@ -19,7 +19,6 @@ class CreateDispatchJobDto
         public readonly string $targetUrl,
         public readonly string $payload,
         public readonly string $dispatchPoolId,
-        public readonly string $partitionId,
         public readonly ?string $subject = null,
         public readonly ?string $correlationId = null,
         public readonly ?string $eventId = null,
@@ -49,7 +48,6 @@ class CreateDispatchJobDto
         string $targetUrl,
         array|string $payload,
         string $dispatchPoolId,
-        string $partitionId
     ): self {
         return new self(
             source: $source,
@@ -57,7 +55,6 @@ class CreateDispatchJobDto
             targetUrl: $targetUrl,
             payload: is_array($payload) ? json_encode($payload) : $payload,
             dispatchPoolId: $dispatchPoolId,
-            partitionId: $partitionId,
         );
     }
 
@@ -72,7 +69,6 @@ class CreateDispatchJobDto
             targetUrl: $this->targetUrl,
             payload: $this->payload,
             dispatchPoolId: $this->dispatchPoolId,
-            partitionId: $this->partitionId,
             subject: $this->subject,
             correlationId: $correlationId,
             eventId: $this->eventId,
@@ -103,7 +99,6 @@ class CreateDispatchJobDto
             targetUrl: $this->targetUrl,
             payload: $this->payload,
             dispatchPoolId: $this->dispatchPoolId,
-            partitionId: $this->partitionId,
             subject: $subject,
             correlationId: $this->correlationId,
             eventId: $this->eventId,
@@ -134,7 +129,6 @@ class CreateDispatchJobDto
             targetUrl: $this->targetUrl,
             payload: $this->payload,
             dispatchPoolId: $this->dispatchPoolId,
-            partitionId: $this->partitionId,
             subject: $this->subject,
             correlationId: $this->correlationId,
             eventId: $this->eventId,
@@ -165,7 +159,6 @@ class CreateDispatchJobDto
             targetUrl: $this->targetUrl,
             payload: $this->payload,
             dispatchPoolId: $this->dispatchPoolId,
-            partitionId: $this->partitionId,
             subject: $this->subject,
             correlationId: $this->correlationId,
             eventId: $this->eventId,
@@ -196,7 +189,6 @@ class CreateDispatchJobDto
             targetUrl: $this->targetUrl,
             payload: $this->payload,
             dispatchPoolId: $this->dispatchPoolId,
-            partitionId: $this->partitionId,
             subject: $this->subject,
             correlationId: $this->correlationId,
             eventId: $this->eventId,
@@ -227,7 +219,6 @@ class CreateDispatchJobDto
             targetUrl: $this->targetUrl,
             payload: $this->payload,
             dispatchPoolId: $this->dispatchPoolId,
-            partitionId: $this->partitionId,
             subject: $this->subject,
             correlationId: $this->correlationId,
             eventId: $this->eventId,
@@ -258,7 +249,6 @@ class CreateDispatchJobDto
             targetUrl: $this->targetUrl,
             payload: $this->payload,
             dispatchPoolId: $this->dispatchPoolId,
-            partitionId: $this->partitionId,
             subject: $this->subject,
             correlationId: $this->correlationId,
             eventId: $this->eventId,

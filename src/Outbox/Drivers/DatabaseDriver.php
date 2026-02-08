@@ -55,18 +55,22 @@ class DatabaseDriver implements OutboxDriver
 
     /**
      * Prepare a message for database insertion.
+     * Column layout matches the outbox-processor schema.
      */
     private function prepareMessage(array $message): array
     {
         return [
+            // Processor-required columns
             'id' => $message['id'],
-            'tenant_id' => $message['tenant_id'],
-            'partition_id' => $message['partition_id'],
             'type' => $message['type'],
+            'message_group' => $message['message_group'] ?? null,
             'payload' => $message['payload'],
-            'payload_size' => $message['payload_size'],
             'status' => $message['status'],
             'created_at' => $message['created_at'],
+            'updated_at' => $message['updated_at'],
+            // SDK-specific columns
+            'client_id' => $message['client_id'],
+            'payload_size' => $message['payload_size'],
             'headers' => isset($message['headers']) ? json_encode($message['headers']) : null,
         ];
     }
