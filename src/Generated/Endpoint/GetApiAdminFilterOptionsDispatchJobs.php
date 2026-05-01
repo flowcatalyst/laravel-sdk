@@ -2,7 +2,7 @@
 
 namespace FlowCatalyst\Generated\Endpoint;
 
-class GetApiAdminDispatchJobsFilterOptions extends \FlowCatalyst\Generated\Runtime\Client\BaseEndpoint implements \FlowCatalyst\Generated\Runtime\Client\Endpoint
+class GetApiAdminFilterOptionsDispatchJobs extends \FlowCatalyst\Generated\Runtime\Client\BaseEndpoint implements \FlowCatalyst\Generated\Runtime\Client\Endpoint
 {
     use \FlowCatalyst\Generated\Runtime\Client\EndpointTrait;
     public function getMethod(): string
@@ -11,7 +11,7 @@ class GetApiAdminDispatchJobsFilterOptions extends \FlowCatalyst\Generated\Runti
     }
     public function getUri(): string
     {
-        return '/bff/dispatch-jobs/filter-options';
+        return '/bff/filter-options/dispatch-jobs';
     }
     public function getBody(\Symfony\Component\Serializer\SerializerInterface $serializer, $streamFactory = null): array
     {
@@ -25,14 +25,14 @@ class GetApiAdminDispatchJobsFilterOptions extends \FlowCatalyst\Generated\Runti
      * {@inheritdoc}
      *
      *
-     * @return null|\FlowCatalyst\Generated\Model\DispatchJobFilterOptionsResponse
+     * @return null|\FlowCatalyst\Generated\Model\DispatchJobsFilterOptions
      */
     protected function transformResponseBody(\Psr\Http\Message\ResponseInterface $response, \Symfony\Component\Serializer\SerializerInterface $serializer, ?string $contentType = null)
     {
         $status = $response->getStatusCode();
         $body = (string) $response->getBody();
         if (is_null($contentType) === false && (200 === $status && mb_strpos(strtolower($contentType), 'application/json') !== false)) {
-            return $serializer->deserialize($body, 'FlowCatalyst\Generated\Model\DispatchJobFilterOptionsResponse', 'json');
+            return $serializer->deserialize($body, 'FlowCatalyst\Generated\Model\DispatchJobsFilterOptions', 'json');
         }
     }
     public function getAuthenticationScopes(): array
