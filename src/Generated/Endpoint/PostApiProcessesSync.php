@@ -2,33 +2,33 @@
 
 namespace FlowCatalyst\Generated\Endpoint;
 
-class GetApiAdminEventTypes extends \FlowCatalyst\Generated\Runtime\Client\BaseEndpoint implements \FlowCatalyst\Generated\Runtime\Client\Endpoint
+class PostApiProcessesSync extends \FlowCatalyst\Generated\Runtime\Client\BaseEndpoint implements \FlowCatalyst\Generated\Runtime\Client\Endpoint
 {
     /**
+     * @param null|\FlowCatalyst\Generated\Model\SyncProcessesRequest $requestBody
      * @param array{
-     *    "pagination": array,
-     *    "application"?: string, //Filter by application
-     *    "clientId"?: string, //Filter by client ID
-     *    "status"?: string, //Filter by status
-     *    "subdomain"?: string, //Filter by subdomain
-     *    "aggregate"?: string, //Filter by aggregate
+     *    "removeUnlisted"?: bool,
      * } $queryParameters
      */
-    public function __construct(array $queryParameters = [])
+    public function __construct(?\FlowCatalyst\Generated\Model\SyncProcessesRequest $requestBody = null, array $queryParameters = [])
     {
+        $this->body = $requestBody;
         $this->queryParameters = $queryParameters;
     }
     use \FlowCatalyst\Generated\Runtime\Client\EndpointTrait;
     public function getMethod(): string
     {
-        return 'GET';
+        return 'POST';
     }
     public function getUri(): string
     {
-        return '/api/event-types';
+        return '/api/processes/sync';
     }
     public function getBody(\Symfony\Component\Serializer\SerializerInterface $serializer, $streamFactory = null): array
     {
+        if ($this->body instanceof \FlowCatalyst\Generated\Model\SyncProcessesRequest) {
+            return [['Content-Type' => ['application/json']], $serializer->serialize($this->body, 'json')];
+        }
         return [[], null];
     }
     public function getExtraHeaders(): array
@@ -38,29 +38,28 @@ class GetApiAdminEventTypes extends \FlowCatalyst\Generated\Runtime\Client\BaseE
     protected function getQueryOptionsResolver(): \Symfony\Component\OptionsResolver\OptionsResolver
     {
         $optionsResolver = parent::getQueryOptionsResolver();
-        $optionsResolver->setDefined(['pagination', 'application', 'clientId', 'status', 'subdomain', 'aggregate']);
-        $optionsResolver->setRequired(['pagination']);
+        $optionsResolver->setDefined(['removeUnlisted']);
+        $optionsResolver->setRequired([]);
         $optionsResolver->setDefaults([]);
-        $optionsResolver->addAllowedTypes('pagination', ['array']);
-        $optionsResolver->addAllowedTypes('application', ['string']);
-        $optionsResolver->addAllowedTypes('clientId', ['string']);
-        $optionsResolver->addAllowedTypes('status', ['string']);
-        $optionsResolver->addAllowedTypes('subdomain', ['string']);
-        $optionsResolver->addAllowedTypes('aggregate', ['string']);
+        $optionsResolver->addAllowedTypes('removeUnlisted', ['bool']);
         return $optionsResolver;
     }
     /**
      * {@inheritdoc}
      *
+     * @throws \FlowCatalyst\Generated\Exception\PostApiProcessesSyncBadRequestException
      *
-     * @return null|\FlowCatalyst\Generated\Model\EventTypeListResponse
+     * @return null|\FlowCatalyst\Generated\Model\SyncResultResponse
      */
     protected function transformResponseBody(\Psr\Http\Message\ResponseInterface $response, \Symfony\Component\Serializer\SerializerInterface $serializer, ?string $contentType = null)
     {
         $status = $response->getStatusCode();
         $body = (string) $response->getBody();
         if (is_null($contentType) === false && (200 === $status && mb_strpos(strtolower($contentType), 'application/json') !== false)) {
-            return $serializer->deserialize($body, 'FlowCatalyst\Generated\Model\EventTypeListResponse', 'json');
+            return $serializer->deserialize($body, 'FlowCatalyst\Generated\Model\SyncResultResponse', 'json');
+        }
+        if (400 === $status) {
+            throw new \FlowCatalyst\Generated\Exception\PostApiProcessesSyncBadRequestException($response);
         }
     }
     public function getAuthenticationScopes(): array

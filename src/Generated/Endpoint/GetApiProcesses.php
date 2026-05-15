@@ -2,16 +2,15 @@
 
 namespace FlowCatalyst\Generated\Endpoint;
 
-class GetApiAdminEventTypes extends \FlowCatalyst\Generated\Runtime\Client\BaseEndpoint implements \FlowCatalyst\Generated\Runtime\Client\Endpoint
+class GetApiProcesses extends \FlowCatalyst\Generated\Runtime\Client\BaseEndpoint implements \FlowCatalyst\Generated\Runtime\Client\Endpoint
 {
     /**
      * @param array{
      *    "pagination": array,
-     *    "application"?: string, //Filter by application
-     *    "clientId"?: string, //Filter by client ID
-     *    "status"?: string, //Filter by status
-     *    "subdomain"?: string, //Filter by subdomain
-     *    "aggregate"?: string, //Filter by aggregate
+     *    "application"?: string,
+     *    "subdomain"?: string,
+     *    "status"?: string,
+     *    "search"?: string,
      * } $queryParameters
      */
     public function __construct(array $queryParameters = [])
@@ -25,7 +24,7 @@ class GetApiAdminEventTypes extends \FlowCatalyst\Generated\Runtime\Client\BaseE
     }
     public function getUri(): string
     {
-        return '/api/event-types';
+        return '/api/processes';
     }
     public function getBody(\Symfony\Component\Serializer\SerializerInterface $serializer, $streamFactory = null): array
     {
@@ -38,29 +37,28 @@ class GetApiAdminEventTypes extends \FlowCatalyst\Generated\Runtime\Client\BaseE
     protected function getQueryOptionsResolver(): \Symfony\Component\OptionsResolver\OptionsResolver
     {
         $optionsResolver = parent::getQueryOptionsResolver();
-        $optionsResolver->setDefined(['pagination', 'application', 'clientId', 'status', 'subdomain', 'aggregate']);
+        $optionsResolver->setDefined(['pagination', 'application', 'subdomain', 'status', 'search']);
         $optionsResolver->setRequired(['pagination']);
         $optionsResolver->setDefaults([]);
         $optionsResolver->addAllowedTypes('pagination', ['array']);
         $optionsResolver->addAllowedTypes('application', ['string']);
-        $optionsResolver->addAllowedTypes('clientId', ['string']);
-        $optionsResolver->addAllowedTypes('status', ['string']);
         $optionsResolver->addAllowedTypes('subdomain', ['string']);
-        $optionsResolver->addAllowedTypes('aggregate', ['string']);
+        $optionsResolver->addAllowedTypes('status', ['string']);
+        $optionsResolver->addAllowedTypes('search', ['string']);
         return $optionsResolver;
     }
     /**
      * {@inheritdoc}
      *
      *
-     * @return null|\FlowCatalyst\Generated\Model\EventTypeListResponse
+     * @return null|\FlowCatalyst\Generated\Model\ProcessListResponse
      */
     protected function transformResponseBody(\Psr\Http\Message\ResponseInterface $response, \Symfony\Component\Serializer\SerializerInterface $serializer, ?string $contentType = null)
     {
         $status = $response->getStatusCode();
         $body = (string) $response->getBody();
         if (is_null($contentType) === false && (200 === $status && mb_strpos(strtolower($contentType), 'application/json') !== false)) {
-            return $serializer->deserialize($body, 'FlowCatalyst\Generated\Model\EventTypeListResponse', 'json');
+            return $serializer->deserialize($body, 'FlowCatalyst\Generated\Model\ProcessListResponse', 'json');
         }
     }
     public function getAuthenticationScopes(): array
