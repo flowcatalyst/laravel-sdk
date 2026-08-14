@@ -2,47 +2,58 @@
 
 namespace FlowCatalyst\Generated\Endpoint;
 
-class EnsurePortalUser extends \FlowCatalyst\Generated\Runtime\Client\BaseEndpoint implements \FlowCatalyst\Generated\Runtime\Client\Endpoint
+class DeletePortalUser extends \FlowCatalyst\Generated\Runtime\Client\BaseEndpoint implements \FlowCatalyst\Generated\Runtime\Client\Endpoint
 {
+    protected $id;
     /**
-     * @param null|\FlowCatalyst\Generated\Model\PortalUserRequest $requestBody
+     * @param string $id
+     * @param array{
+     *    "clientId"?: string, //Tenant client whose portal identity to delete
+     * } $queryParameters
      */
-    public function __construct(?\FlowCatalyst\Generated\Model\PortalUserRequest $requestBody = null)
+    public function __construct(string $id, array $queryParameters = [])
     {
-        $this->body = $requestBody;
+        $this->id = $id;
+        $this->queryParameters = $queryParameters;
     }
     use \FlowCatalyst\Generated\Runtime\Client\EndpointTrait;
     public function getMethod(): string
     {
-        return 'POST';
+        return 'DELETE';
     }
     public function getUri(): string
     {
-        return '/api/portal-users';
+        return str_replace(['{id}'], [$this->id], '/api/portal-users/{id}');
     }
     public function getBody(\Symfony\Component\Serializer\SerializerInterface $serializer, $streamFactory = null): array
     {
-        if ($this->body instanceof \FlowCatalyst\Generated\Model\PortalUserRequest) {
-            return [['Content-Type' => ['application/json']], $serializer->serialize($this->body, 'json')];
-        }
         return [[], null];
     }
     public function getExtraHeaders(): array
     {
         return ['Accept' => ['application/json']];
     }
+    protected function getQueryOptionsResolver(): \Symfony\Component\OptionsResolver\OptionsResolver
+    {
+        $optionsResolver = parent::getQueryOptionsResolver();
+        $optionsResolver->setDefined(['clientId']);
+        $optionsResolver->setRequired([]);
+        $optionsResolver->setDefaults([]);
+        $optionsResolver->addAllowedTypes('clientId', ['string']);
+        return $optionsResolver;
+    }
     /**
      * {@inheritdoc}
      *
      *
-     * @return null|\FlowCatalyst\Generated\Model\PortalUserResponse|\FlowCatalyst\Generated\Model\ErrorModel
+     * @return null|\FlowCatalyst\Generated\Model\StatusChangeResponse|\FlowCatalyst\Generated\Model\ErrorModel
      */
     protected function transformResponseBody(\Psr\Http\Message\ResponseInterface $response, \Symfony\Component\Serializer\SerializerInterface $serializer, ?string $contentType = null)
     {
         $status = $response->getStatusCode();
         $body = (string) $response->getBody();
         if (is_null($contentType) === false && (200 === $status && mb_strpos(strtolower($contentType), 'application/json') !== false)) {
-            return $serializer->deserialize($body, 'FlowCatalyst\Generated\Model\PortalUserResponse', 'json');
+            return $serializer->deserialize($body, 'FlowCatalyst\Generated\Model\StatusChangeResponse', 'json');
         }
         if (mb_strpos(strtolower($contentType), 'application/json') !== false) {
             return $serializer->deserialize($body, 'FlowCatalyst\Generated\Model\ErrorModel', 'json');

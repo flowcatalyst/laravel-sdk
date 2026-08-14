@@ -2,13 +2,16 @@
 
 namespace FlowCatalyst\Generated\Endpoint;
 
-class EnsurePortalUser extends \FlowCatalyst\Generated\Runtime\Client\BaseEndpoint implements \FlowCatalyst\Generated\Runtime\Client\Endpoint
+class DeactivatePortalUser extends \FlowCatalyst\Generated\Runtime\Client\BaseEndpoint implements \FlowCatalyst\Generated\Runtime\Client\Endpoint
 {
+    protected $id;
     /**
-     * @param null|\FlowCatalyst\Generated\Model\PortalUserRequest $requestBody
+     * @param string $id
+     * @param null|\FlowCatalyst\Generated\Model\PortalUserClientBody $requestBody
      */
-    public function __construct(?\FlowCatalyst\Generated\Model\PortalUserRequest $requestBody = null)
+    public function __construct(string $id, ?\FlowCatalyst\Generated\Model\PortalUserClientBody $requestBody = null)
     {
+        $this->id = $id;
         $this->body = $requestBody;
     }
     use \FlowCatalyst\Generated\Runtime\Client\EndpointTrait;
@@ -18,11 +21,11 @@ class EnsurePortalUser extends \FlowCatalyst\Generated\Runtime\Client\BaseEndpoi
     }
     public function getUri(): string
     {
-        return '/api/portal-users';
+        return str_replace(['{id}'], [$this->id], '/api/portal-users/{id}/deactivate');
     }
     public function getBody(\Symfony\Component\Serializer\SerializerInterface $serializer, $streamFactory = null): array
     {
-        if ($this->body instanceof \FlowCatalyst\Generated\Model\PortalUserRequest) {
+        if ($this->body instanceof \FlowCatalyst\Generated\Model\PortalUserClientBody) {
             return [['Content-Type' => ['application/json']], $serializer->serialize($this->body, 'json')];
         }
         return [[], null];
@@ -35,14 +38,14 @@ class EnsurePortalUser extends \FlowCatalyst\Generated\Runtime\Client\BaseEndpoi
      * {@inheritdoc}
      *
      *
-     * @return null|\FlowCatalyst\Generated\Model\PortalUserResponse|\FlowCatalyst\Generated\Model\ErrorModel
+     * @return null|\FlowCatalyst\Generated\Model\StatusChangeResponse|\FlowCatalyst\Generated\Model\ErrorModel
      */
     protected function transformResponseBody(\Psr\Http\Message\ResponseInterface $response, \Symfony\Component\Serializer\SerializerInterface $serializer, ?string $contentType = null)
     {
         $status = $response->getStatusCode();
         $body = (string) $response->getBody();
         if (is_null($contentType) === false && (200 === $status && mb_strpos(strtolower($contentType), 'application/json') !== false)) {
-            return $serializer->deserialize($body, 'FlowCatalyst\Generated\Model\PortalUserResponse', 'json');
+            return $serializer->deserialize($body, 'FlowCatalyst\Generated\Model\StatusChangeResponse', 'json');
         }
         if (mb_strpos(strtolower($contentType), 'application/json') !== false) {
             return $serializer->deserialize($body, 'FlowCatalyst\Generated\Model\ErrorModel', 'json');
